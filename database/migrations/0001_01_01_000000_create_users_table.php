@@ -19,7 +19,7 @@ return new class extends Migration {
 
             $table->enum('role', ['admin', 'siswa'])->default('siswa');
 
-            $table->enum('status_akun', ['menunggu', 'aktif', 'ditolak'])->default('menunggu');
+            $table->enum('status_akun', ['aktif', 'nonaktif'])->default('aktif');
 
             $table->timestamps();
         });

@@ -19,7 +19,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:6',
             'phone' => 'required|string',
         ]);
 
@@ -29,8 +29,10 @@ class AuthController extends Controller
             if (class_exists('\\libphonenumber\\PhoneNumberUtil')) {
                 $phoneUtil = \libphonenumber\PhoneNumberUtil::getInstance();
                 $numberProto = $phoneUtil->parse($data['phone'], 'ID');
-                if (! $phoneUtil->isValidNumber($numberProto)) {
-                    return back()->withErrors(['phone' => 'Format nomor telepon tidak valid'])->withInput();
+                if (!$phoneUtil->isValidNumber($numberProto)) {
+                    return back()
+                        ->withErrors(['phone' => 'Format nomor telepon tidak valid'])
+                        ->withInput();
                 }
                 $phoneToStore = $phoneUtil->format($numberProto, \libphonenumber\PhoneNumberFormat::E164);
             }
@@ -50,12 +52,18 @@ class AuthController extends Controller
 
         // send WA notification (best-effort)
         try {
-            \App\Services\WhatsAppService::send($user->phone, "Terima kasih $user->name, registrasi Anda berhasil. Menunggu verifikasi admin.");
+            \App\Services\WhatsAppService::send($user->phone, "Terima kasih $user->name, registrasi Anda berhasil.");
         } catch (\Exception $e) {
-            // ignore
         }
 
-        return redirect()->route('login')->with('success', 'Registrasi berhasil. Menunggu verifikasi admin.');
+        return redirect()
+            ->route('login')
+            ->with('login_success', [
+                'message' => 'Registrasi berhasil. Silahkan Login.',
+                'icon' => 'success',
+                'redirect' => route('login'),
+                'delay' => 1300,
+            ]);
     }
 
     public function showLogin()
@@ -71,7 +79,12 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return back()->withErrors(['email' => 'Credensial tidak cocok'])->withInput();
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Email atau Password salah'], 401);
+            }
+            return back()
+                ->withErrors(['email' => 'Email atau Password salah'])
+                ->withInput();
         }
 
         $request->session()->regenerate();
@@ -79,18 +92,35 @@ class AuthController extends Controller
         $user = Auth::user();
         if ($user->status_akun !== 'aktif') {
             Auth::logout();
-            return back()->withErrors(['email' => 'Akun belum aktif atau ditolak']);
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Akun belum aktif atau sudah nonaktif'], 403);
+            }
+            return back()->withErrors(['email' => 'Akun belum aktif atau sudah nonaktif']);
         }
-        // optionally notify login via WA (non-blocking)
         try {
             \App\Services\WhatsAppService::send($user->phone, "Halo $user->name, Anda berhasil login.");
-        } catch (\Exception $e) {}
-
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
+        } catch (\Exception $e) {
         }
 
-        return redirect()->route('pendaftaran.create');
+        $redirectRoute = $user->role === 'admin' ? route('admin.dashboard') : route('pendaftaran.create');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Login berhasil',
+                'redirect' => $redirectRoute,
+                'delay' => 1300,
+            ]);
+        }
+
+        return redirect()
+            ->route('login')
+            ->with('login_success', [
+                'message' => 'Login berhasil',
+                'icon' => 'success',
+                'redirect' => $redirectRoute,
+                'delay' => 1300,
+            ]);
     }
 
     public function logout()

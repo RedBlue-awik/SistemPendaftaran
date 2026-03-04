@@ -39,4 +39,17 @@ class JalurController extends Controller
         $jalur->delete();
         return back()->with('success', 'Jalur dihapus');
     }
+
+    public function update(Request $request, Jalur $jalur)
+    {
+        if (Auth::user()->role !== 'admin') abort(403);
+        $data = $request->validate([
+            'nama_jalur' => 'required|string',
+            'deskripsi' => 'nullable|string',
+            'batas_pendaftaran' => 'required|integer',
+        ]);
+
+        $jalur->update($data);
+        return back()->with('success', 'Jalur berhasil diperbarui');
+    }
 }

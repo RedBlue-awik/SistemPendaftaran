@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('jalurs', function (Blueprint $table) {
             $table->id();
             $table->string('nama_jalur');
-            $table->text('deskripsi')->nullable();
+            $table->text('deskripsi')->default('Tidak ada deskripsi terkait jalur ini.');
             $table->integer('batas_pendaftaran');
             $table->timestamps();
         });

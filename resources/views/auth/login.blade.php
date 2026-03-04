@@ -13,6 +13,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- TAMBAHKAN SWEETALERT2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         tailwind.config = {
@@ -40,9 +43,8 @@
 
     <div class="relative w-full max-w-5xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden flex min-h-[600px] md:min-h-[700px]">
         
-        <!-- Left Side: Info / Branding (Hidden on small screens) -->
+        <!-- Left Side: Info / Branding -->
         <div class="hidden md:flex md:w-1/2 bg-hijau-gelap text-white p-10 flex-col justify-between relative overflow-hidden">
-            <!-- Decorative Background -->
             <div class="absolute top-0 right-0 w-64 h-64 bg-hijau-utama rounded-full filter blur-3xl opacity-30 transform translate-x-20 -translate-y-20"></div>
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-hijau-pudar rounded-full filter blur-3xl opacity-20 transform -translate-x-20 translate-y-20"></div>
 
@@ -74,7 +76,8 @@
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">Masuk Akun</h3>
                 <p class="text-gray-500 text-sm mb-6">Silakan masuk untuk melanjutkan pendaftaran.</p>
                 
-                <form action="{{ route('login') }}" method="POST">
+                <!-- TAMBAHKAN ID PADA FORM -->
+                <form id="loginForm" action="{{ route('login') }}" method="POST">
                     @csrf
                     
                     <div class="mb-4">
@@ -94,7 +97,7 @@
                                 <i class="bi bi-lock"></i>
                             </span>
                             <input type="password" id="password" name="password" placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-hijau-utama focus:border-transparent transition" required>
-                            <i id="togglePassword" class="bi bi-eye-slash absolute inset-y-0 right-0 flex items-center pr-3 text-xl text-gray-500 cursor-pointer" role="button" aria-label="Tampilkan password"></i>
+                            <i id="togglePassword" class="bi bi-eye-slash absolute inset-y-0 right-0 flex items-center pr-3 text-xl text-gray-500 cursor-pointer" role="button"></i>
                         </div>
                     </div>
 
@@ -103,7 +106,6 @@
                             <input type="checkbox" name="remember" class="w-4 h-4 text-hijau-utama border-gray-300 rounded focus:ring-hijau-utama">
                             <span class="ml-2">Ingat saya</span>
                         </label>
-                        {{-- <a href="{{ route('password.request') }}" class="text-sm text-hijau-utama hover:underline">Lupa Password?</a> --}}
                     </div>
 
                     <button type="submit" class="w-full bg-hijau-utama hover:bg-hijau-gelap text-white font-semibold py-3 rounded-lg transition duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
@@ -120,7 +122,6 @@
                 </div>
             </div>
             
-            <!-- Back to Home Link -->
             <div class="mt-8 text-center">
                 <a href="{{ url('/') }}" class="text-sm text-gray-500 hover:text-hijau-utama transition flex items-center justify-center gap-1">
                     <i class="bi bi-arrow-left"></i> Kembali ke Beranda
@@ -130,24 +131,72 @@
     </div>
 
     <script>
+        // Script Toggle Password
         document.addEventListener('DOMContentLoaded', function() {
             const pwd = document.getElementById('password');
             const toggle = document.getElementById('togglePassword');
             if (pwd && toggle) {
                 toggle.addEventListener('click', function() {
-                    if (pwd.type === 'password') {
-                        pwd.type = 'text';
-                        toggle.classList.remove('bi-eye-slash');
-                        toggle.classList.add('bi-eye');
-                        toggle.setAttribute('aria-label', 'Sembunyikan password');
-                    } else {
-                        pwd.type = 'password';
-                        toggle.classList.remove('bi-eye');
-                        toggle.classList.add('bi-eye-slash');
-                        toggle.setAttribute('aria-label', 'Tampilkan password');
-                    }
+                    const type = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
+                    pwd.setAttribute('type', type);
+                    this.classList.toggle('bi-eye-slash');
+                    this.classList.toggle('bi-eye');
                 });
             }
+        });
+    </script>
+    <script>
+        // Show toast for server-side flash messages or validation errors (non-AJAX flows)
+        const ToastS = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 1300,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        const ToastE = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                ToastS.fire({ icon: 'success', title: "{{ session('success') }}" });
+            @endif
+
+            @if(session('error'))
+                ToastE.fire({ icon: 'error', title: "{{ session('error') }}" });
+            @endif
+
+            @if ($errors->any())
+                let msgs = "";
+                @foreach ($errors->all() as $err)
+                    msgs += "{{ $err }} ";
+                @endforeach
+                ToastE.fire({ icon: 'error', title: msgs });
+            @endif
+
+            @if(session('login_success'))
+                const loginPayload = @json(session('login_success'));
+                if (loginPayload) {
+                    ToastS.fire({ icon: loginPayload.icon || 'success', title: loginPayload.message || 'Login berhasil' });
+                    const delayMs = Number(loginPayload.delay) || 1500;
+                    setTimeout(() => {
+                        window.location.href = loginPayload.redirect || '/';
+                    }, delayMs);
+                }
+            @endif
         });
     </script>
 </body>

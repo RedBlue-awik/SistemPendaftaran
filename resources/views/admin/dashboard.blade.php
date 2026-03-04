@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <!-- Charts and Tables Row -->
+    <!-- Charts dan Tables Row -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div class="lg:col-span-2 bg-white border border-border rounded-2xl p-6">
             <h3 class="text-lg font-bold text-text-main mb-6">Statistik Pendaftaran (7 bulan terakhir)</h3>
@@ -114,15 +114,16 @@
             <h3 class="text-lg font-bold text-text-main mb-6">Distribusi Jalur</h3>
             <div class="space-y-4">
                 @php
-                    // Gunakan nama variabel berbeda agar tidak bentrok
-                    $totalPendaftarJalur = $jalurs->sum('pendaftarans_count') ?: 1;
+                    $totalPendaftarJalur = $jalurs->sum('pendaftar') ?: 1;
                     $colors = ['bg-accent', 'bg-sky-500', 'bg-amber-500', 'bg-purple-500'];
                 @endphp
                 @foreach ($jalurs as $i => $jalur)
-                    @php $percent = (int) round(($jalur->pendaftarans_count / $totalPendaftarJalur) * 100); @endphp
+                    @php
+                        $percent = (int) round(($jalur['pendaftar'] / $totalPendaftarJalur) * 100);
+                    @endphp
                     <div>
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-text-main font-medium">{{ $jalur->nama_jalur ?? $jalur->nama }}</span>
+                            <span class="text-text-main font-medium">{{ $jalur['nama'] }}</span>
                             <span class="text-muted">{{ $percent }}%</span>
                         </div>
                         <div class="h-2 bg-green-50 rounded-full overflow-hidden">
@@ -164,7 +165,8 @@
                                 @elseif($p->status_pendaftaran === 'Ditolak')
                                     <span class="badge bg-red-100 text-red-700">Ditolak</span>
                                 @else
-                                    <span class="badge bg-amber-100 text-amber-700">{{ $p->status_pendaftaran ?? 'Proses' }}</span>
+                                    <span
+                                        class="badge bg-amber-100 text-amber-700">{{ $p->status_pendaftaran ?? 'Proses' }}</span>
                                 @endif
                             </td>
                         </tr>
@@ -179,25 +181,25 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const counterEl = document.getElementById('totalPendaftar');
-            
+
             if (counterEl) {
                 const target = parseInt(counterEl.innerText);
-                
+
                 // Fungsi animasi counter
                 const animateCounter = (element, start, end, duration) => {
                     let startTimestamp = null;
                     const step = (timestamp) => {
                         if (!startTimestamp) startTimestamp = timestamp;
                         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                        
+
                         // Efek memperlambat di akhir (Ease Out Cubic)
                         const easeProgress = 1 - Math.pow(1 - progress, 3);
-                        
+
                         const current = Math.floor(easeProgress * (end - start) + start);
-                        
+
                         // Format angka dengan titik (contoh: 1.500)
                         element.innerText = current.toLocaleString('id-ID');
-                        
+
                         if (progress < 1) {
                             window.requestAnimationFrame(step);
                         } else {

@@ -37,13 +37,13 @@ class UserController extends Controller
         if (Auth::user()->role !== 'admin') {
             abort(403);
         }
-        $user->status_akun = 'ditolak';
+        $user->status_akun = 'nonaktif';
         $user->save();
         try {
-            \App\Services\WhatsAppService::send($user->phone, "Akun Anda telah ditolak oleh admin.");
+            \App\Services\WhatsAppService::send($user->phone, "Akun Anda telah di nonaktif kan oleh admin.");
         } catch (\Exception $e) {}
 
-        return back()->with('success', 'Akun ditolak');
+        return back()->with('success', 'Akun di nonaktif kan');
     }
 
     public function store(Request $request)
@@ -55,7 +55,7 @@ class UserController extends Controller
             'phone' => 'nullable|string',
             'password' => 'required|string|min:6|confirmed',
             'role' => 'required|in:admin,siswa',
-            'status_akun' => 'required|in:menunggu,aktif,ditolak',
+            'status_akun' => 'required|in:aktif,nonaktif',
         ]);
         $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
         User::create($data);
@@ -71,7 +71,7 @@ class UserController extends Controller
             'phone' => 'nullable|string',
             'password' => 'nullable|string|min:6|confirmed',
             'role' => 'required|in:admin,siswa',
-            'status_akun' => 'required|in:menunggu,aktif,ditolak',
+            'status_akun' => 'required|in:aktif,nonaktif',
         ]);
         if (!empty($data['password'])) {
             $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);

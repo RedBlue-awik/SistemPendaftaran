@@ -4,18 +4,6 @@
 @section('pageTitle', 'Manajemen Gelombang')
 
 @section('content')
-<!-- Tambahkan Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-<!-- Notifikasi Sukses -->
-@if(session('success'))
-<div class="mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-xl flex items-center justify-between animate-fade-in-up shadow-sm">
-    <div class="flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-        <span class="font-medium">{{ session('success') }}</span>
-    </div>
-</div>
-@endif
 
 <div class="flex items-center justify-between mb-6">
     <h3 class="text-xl font-bold text-text-main">Daftar Gelombang Pendaftaran</h3>
@@ -126,13 +114,6 @@
 @endsection
 
 @push('scripts')
-<!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Flatpickr JS & Locale -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
-
 
 <script>
     // Simpan data gelombang ke variabel JS
@@ -201,5 +182,36 @@
     function submitForm() {
         document.getElementById('gelForm').submit();
     }
+</script>
+<script>
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+            Toast.fire({ icon: 'success', title: "{{ session('success') }}", timer: 1300 });
+        @endif
+
+        @if(session('error'))
+            Toast.fire({ icon: 'error', title: "{{ session('error') }}", timer: 3000 });
+        @endif
+
+        @if ($errors->any())
+            let msgs = "";
+            @foreach ($errors->all() as $err)
+                msgs += "{{ $err }} ";
+            @endforeach
+            Toast.fire({ icon: 'error', title: msgs, timer: 3000 });
+        @endif
+    });
 </script>
 @endpush
