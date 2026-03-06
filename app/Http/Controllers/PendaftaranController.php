@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pendaftaran;
 use App\Models\Dokumen;
 use App\Models\Gelombang;
 use App\Models\Jalur;
+use App\Models\Pendaftaran;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Services\WhatsAppService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PendaftaranController extends Controller
 {
@@ -17,93 +19,86 @@ class PendaftaranController extends Controller
         $user = Auth::user();
         $gelombangs = Gelombang::where('status', 'aktif')->get();
         $jalurs = Jalur::all();
-        return view('pendaftaran.create', compact('user', 'gelombangs', 'jalurs'));
-    }
-
-    public function confirm(Request $request)
-    {
-        $data = $request->validate([
-            'gelombang_id' => 'required|exists:gelombangs,id',
-            'jalur_id' => 'required|exists:jalurs,id',
-            'nama_lengkap' => 'required|string',
-            'nik' => 'required|string|unique:pendaftarans,nik',
-            'tempat_lahir' => 'required|string',
-            'tanggal_lahir' => 'required|date',
-            'alamat' => 'required|string',
-            'no_hp' => 'required|string',
-            'sekolah_asal' => 'required|string',
-            'jurusan_pilihan' => 'required|string',
-        ]);
-
-        // Pass data to confirmation view (no save yet)
-        $gelombang = Gelombang::find($data['gelombang_id']);
-        $jalur = Jalur::find($data['jalur_id']);
-
-        return view('pendaftaran.confirm', compact('data', 'gelombang', 'jalur'));
+        return view('pendaftaran', compact('user', 'gelombangs', 'jalurs'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validatedData = $request->validate([
             'gelombang_id' => 'required|exists:gelombangs,id',
             'jalur_id' => 'required|exists:jalurs,id',
             'nama_lengkap' => 'required|string',
             'nik' => 'required|string|unique:pendaftarans,nik',
-            'tempat_lahir' => 'required|string',
             'tanggal_lahir' => 'required|date',
             'alamat' => 'required|string',
             'no_hp' => 'required|string',
             'sekolah_asal' => 'required|string',
             'jurusan_pilihan' => 'required|string',
+            'kk' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
+            'akta' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
+            'ijazah' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
+            'foto' => 'required|file|mimes:png,jpg,jpeg|max:2048',
+            'sertifikat' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
+            'ktp_orangtua' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
         ]);
 
-        $data['user_id'] = Auth::id();
-        $data['nomor_pendaftaran'] = 'P'.time().uniqid();
-        $data['status_pendaftaran'] = 'menunggu_verifikasi';
-
-        $pendaftaran = Pendaftaran::create($data);
-
+        DB::beginTransaction();
         try {
-            $u = Auth::user();
-            if ($u && !empty($u->phone)) {
-                WhatsAppService::send($u->phone, "Biodata Anda berhasil disimpan. Silakan lanjutkan upload dokumen.");
+            $dataPendaftaran = $validatedData;
+            $fileKeys = ['kk', 'akta', 'ijazah', 'foto', 'sertifikat', 'ktp_orangtua'];
+            
+            foreach ($fileKeys as $key) {
+                unset($dataPendaftaran[$key]);
             }
-        } catch (\Exception $e) {}
 
-        return redirect()->route('pendaftaran.upload', $pendaftaran->id)->with('success', 'Simpan biodata berhasil. Silakan upload dokumen.');
-    }
+            $dataPendaftaran['user_id'] = Auth::id();
+            $dataPendaftaran['nomor_pendaftaran'] = 'P' . time() . uniqid();
+            $dataPendaftaran['status_pendaftaran'] = 'menunggu_verifikasi';
 
-    public function uploadForm(Pendaftaran $pendaftaran)
-    {
-        if (Auth::id() !== $pendaftaran->user_id) abort(403);
-        return view('pendaftaran.upload', compact('pendaftaran'));
-    }
+            $pendaftaran = Pendaftaran::create($dataPendaftaran);
 
-    public function uploadDokumen(Request $request, Pendaftaran $pendaftaran)
-    {
-        if (Auth::id() !== $pendaftaran->user_id) abort(403);
+            $dataDokumen = ['pendaftaran_id' => $pendaftaran->id];
 
-        $data = $request->validate([
-            'kk' => 'required|file|max:2048',
-            'akta' => 'required|file|max:2048',
-            'ijazah' => 'required|file|max:2048',
-            'foto' => 'required|image|max:2048',
-            'sertifikat' => 'nullable|file|max:2048',
-            'ktp_orangtua' => 'nullable|file|max:2048',
-        ]);
-
-        $files = [];
-        foreach (['kk','akta','ijazah','foto','sertifikat','ktp_orangtua'] as $key) {
-            if ($request->hasFile($key)) {
-                $files[$key] = $request->file($key)->store('dokumens','public');
+            foreach ($fileKeys as $fileKey) {
+                if ($request->hasFile($fileKey)) {
+                    $path = $request->file($fileKey)->store('dokumen', 'public');
+                    $dataDokumen[$fileKey] = $path;
+                }
             }
+
+            Dokumen::create($dataDokumen);
+
+            try {
+                $to = $pendaftaran->no_hp ?? Auth::user()->phone;
+                if ($to) {
+                    WhatsAppService::send($to, 'Pendaftaran dan dokumen Anda berhasil disimpan dengan No. Pendaftaran: ' . $pendaftaran->nomor_pendaftaran . '. Menunggu verifikasi admin.');
+                }
+            } catch (\Exception $e) {
+                Log::error('WhatsApp Error: ' . $e->getMessage());
+            }
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Pendaftaran berhasil disimpan.',
+                    'redirect' => route('pendaftaran')
+                ]);
+            }
+
+            return redirect()->route('pendaftaran')->with('success', 'Pendaftaran dan dokumen berhasil disimpan. Menunggu verifikasi admin.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Pendaftaran Error: ' . $e->getMessage());
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Terjadi kesalahan server: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
         }
-
-        $dok = Dokumen::create(array_merge(['pendaftaran_id' => $pendaftaran->id], $files));
-
-        $pendaftaran->status_pendaftaran = 'menunggu_verifikasi';
-        $pendaftaran->save();
-
-        return redirect()->route('dashboard')->with('success', 'Dokumen berhasil diupload, menunggu verifikasi admin.');
     }
 }

@@ -28,7 +28,6 @@ return new class extends Migration
 
             $table->string('nama_lengkap');
             $table->string('nik')->unique();
-            $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
 
             $table->text('alamat');

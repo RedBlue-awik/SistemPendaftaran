@@ -28,7 +28,10 @@ class PendaftaranController extends Controller
         $pendaftaran->status_pendaftaran = 'terverifikasi';
         $pendaftaran->save();
         try {
-            \App\Services\WhatsAppService::send($pendaftaran->user->phone, "Data pendaftaran Anda telah diverifikasi oleh admin.");
+            $to = !empty($pendaftaran->no_hp) ? $pendaftaran->no_hp : ($pendaftaran->user->phone ?? null);
+            if (!empty($to)) {
+                \App\Services\WhatsAppService::send($to, "Data pendaftaran Anda telah diverifikasi oleh admin.");
+            }
         } catch (\Exception $e) {}
 
         return back()->with('success','Pendaftar terverifikasi');
@@ -43,12 +46,24 @@ class PendaftaranController extends Controller
         ]);
         $pendaftaran->status_kelulusan = $data['status_kelulusan'];
         if (!empty($data['batas_daftar_ulang'])) $pendaftaran->batas_daftar_ulang = $data['batas_daftar_ulang'];
+
+        // update related status fields for clarity
+        if ($pendaftaran->status_kelulusan === 'lulus') {
+            $pendaftaran->status_daftar_ulang = 'belum';
+            $pendaftaran->status_akhir = 'calon';
+        } elseif ($pendaftaran->status_kelulusan === 'tidak_lulus') {
+            $pendaftaran->status_akhir = 'gugur';
+        }
+
         $pendaftaran->save();
         try {
-            if ($pendaftaran->status_kelulusan === 'lulus') {
-                \App\Services\WhatsAppService::send($pendaftaran->user->phone, "Selamat, Anda dinyatakan LULUS. Silakan periksa pengumuman untuk detail daftar ulang.");
-            } elseif ($pendaftaran->status_kelulusan === 'tidak_lulus') {
-                \App\Services\WhatsAppService::send($pendaftaran->user->phone, "Mohon maaf, Anda dinyatakan TIDAK LULUS.");
+            $to = !empty($pendaftaran->no_hp) ? $pendaftaran->no_hp : ($pendaftaran->user->phone ?? null);
+            if (!empty($to)) {
+                if ($pendaftaran->status_kelulusan === 'lulus') {
+                    \App\Services\WhatsAppService::send($to, "Selamat, Anda dinyatakan LULUS. Silakan periksa pengumuman untuk detail daftar ulang.");
+                } elseif ($pendaftaran->status_kelulusan === 'tidak_lulus') {
+                    \App\Services\WhatsAppService::send($to, "Mohon maaf, Anda dinyatakan TIDAK LULUS.");
+                }
             }
         } catch (\Exception $e) {}
 

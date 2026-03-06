@@ -19,15 +19,10 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
 
-    // student-facing
     Route::get('/gelombangs', [GelombangController::class, 'index'])->name('gelombangs.index');
     Route::get('/jalurs', [JalurController::class, 'index'])->name('jalurs.index');
-    Route::get('/pendaftaran/create', [\App\Http\Controllers\PendaftaranController::class, 'create'])->name('pendaftaran.create');
-    Route::post('/pendaftaran/confirm', [\App\Http\Controllers\PendaftaranController::class, 'confirm'])->name('pendaftaran.confirm');
+    Route::get('/pendaftaran', [\App\Http\Controllers\PendaftaranController::class, 'create'])->name('pendaftaran.create');
     Route::post('/pendaftaran', [\App\Http\Controllers\PendaftaranController::class, 'store'])->name('pendaftaran.store');
-    Route::get('/pendaftaran/{pendaftaran}/upload', [\App\Http\Controllers\PendaftaranController::class, 'uploadForm'])->name('pendaftaran.upload');
-    Route::post('/pendaftaran/{pendaftaran}/upload', [\App\Http\Controllers\PendaftaranController::class, 'uploadDokumen'])->name('pendaftaran.upload.post');
-    Route::get('/pengumuman', [\App\Http\Controllers\PengumumanController::class, 'index'])->name('pengumuman.index');
 
     Route::prefix('admin')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
