@@ -6,6 +6,7 @@
     <div class="mt-4">
         <p><strong>Nama:</strong> {{ $pendaftaran->nama_lengkap }}</p>
         <p><strong>Email:</strong> {{ $pendaftaran->user->email }}</p>
+        <p><strong>No Telpone:</strong> {{ $pendaftaran->user->phone }}</p>
         <p><strong>Gelombang:</strong> {{ $pendaftaran->gelombang->nama }}</p>
         <p><strong>Jalur:</strong> {{ $pendaftaran->jalur->nama_jalur }}</p>
         <p><strong>Status Pendaftaran:</strong> {{ $pendaftaran->status_pendaftaran }}</p>

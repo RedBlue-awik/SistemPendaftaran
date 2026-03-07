@@ -5,15 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulir Pendaftaran - SPMB Universitas Hijau</title>
+    <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
 
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Flatpickr CSS & FilePond CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://unpkg.com/filepond/dist/filepond.css">
-    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
@@ -186,20 +183,22 @@
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-hijau-utama focus:border-transparent transition"
                                     required>{{ old('alamat') }}</textarea>
                             </div>
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email Aktif
-                                    *</label>
-                                <input type="email" id="email" name="email"
-                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-hijau-utama focus:border-transparent transition"
-                                    required value="{{ old('email') }}">
-                            </div>
-                            <div>
-                                <label for="noHp" class="block text-sm font-medium text-gray-600 mb-1">No. HP
-                                    (WhatsApp Aktif) *</label>
-                                <input type="tel" id="noHp" name="no_hp" pattern="[0-9]{10,13}"
-                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-hijau-utama focus:border-transparent transition"
-                                    required value="{{ old('no_hp') }}">
-                            </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email
+                                        Aktif
+                                        *</label>
+                                    <input type="email" id="email" name="email"
+                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-hijau-utama focus:border-transparent transition"
+                                        required value="{{ $user->email }}" readonly>
+                                </div>
+                                <div>
+                                    <label for="noHp" class="block text-sm font-medium text-gray-600 mb-1">No. HP
+                                        (WhatsApp Aktif)
+                                        *</label>
+                                    <input type="tel" id="noHp" name="no_hp" pattern="[0-9]{10,13}"
+                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-hijau-utama focus:border-transparent transition"
+                                        required value="{{ $user->phone }}" readonly>
+                                </div>
                         </div>
                     </div>
 
@@ -339,27 +338,25 @@
                                     <span class="text-sm text-gray-500 mt-1" id="foto-label">Klik untuk unggah
                                         file</span>
                                 </label>
-                                <input type="file" id="foto" name="foto" class="filepond"
-                                    accept="image/png,image/jpeg" required>
+                                <input type="file" id="foto" name="foto" class="filepond" required>
                             </div>
 
-                            <!-- Sertifikat (opsional) -->
+                            <!-- KIP / Prestasi (opsional) -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1">Sertifikat
+                                <label class="block text-sm font-medium text-gray-600 mb-1">KIP / Prestasi
                                     (opsional)</label>
-                                <label for="sertifikat"
+                                <label for="kip"
                                     class="file-upload-label flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-hijau-terang transition">
                                     <i class="bi bi-cloud-upload text-2xl text-gray-400"></i>
-                                    <span class="text-sm text-gray-500 mt-1" id="sertifikat-label">Klik untuk unggah
+                                    <span class="text-sm text-gray-500 mt-1" id="kip-label">Klik untuk unggah
                                         file</span>
                                 </label>
-                                <input type="file" id="sertifikat" name="sertifikat" class="filepond">
+                                <input type="file" id="kip" name="kip" class="filepond">
                             </div>
 
-                            <!-- KTP Orangtua (opsional) -->
+                            <!-- KTP Orangtua -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1">KTP Orangtua
-                                    (opsional)</label>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">KTP Orangtua</label>
                                 <label for="ktp_orangtua"
                                     class="file-upload-label flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-hijau-terang transition">
                                     <i class="bi bi-cloud-upload text-2xl text-gray-400"></i>

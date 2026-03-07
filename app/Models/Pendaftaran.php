@@ -13,7 +13,6 @@ class Pendaftaran extends Model
         'nomor_pendaftaran',
         'nama_lengkap',
         'nik',
-        'tempat_lahir',
         'tanggal_lahir',
         'alamat',
         'no_hp',

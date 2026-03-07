@@ -11,17 +11,17 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
 
     Route::get('/gelombangs', [GelombangController::class, 'index'])->name('gelombangs.index');
     Route::get('/jalurs', [JalurController::class, 'index'])->name('jalurs.index');
-    Route::get('/pendaftaran', [\App\Http\Controllers\PendaftaranController::class, 'create'])->name('pendaftaran.create');
+    Route::get('/pendaftaran', [\App\Http\Controllers\PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('/pendaftaran', [\App\Http\Controllers\PendaftaranController::class, 'store'])->name('pendaftaran.store');
 
     Route::prefix('admin')->group(function () {

@@ -172,10 +172,10 @@
             animation-delay: 0.4s;
         }
 
-       .btn-primary {
+        .btn-primary {
             background: green;
             transition: all 0.2s ease;
-            
+
             color: white;
         }
 
@@ -307,7 +307,7 @@
             <!-- User Profile -->
             <div class="p-4 border-t border-border">
                 <div class="flex items-center gap-3 rounded-lg bg-red-50">
-                    <a href="{{ route('logout') }}" class="p-3 w-100 rounded-lg hover:bg-red-100 transition-colors"
+                    <a href="{{ route('logout') }}" onclick="confirmLogout(event)"class="p-3 w-100 rounded-lg hover:bg-red-100 transition-colors"
                         title="Logout">
                         <span class="text-red-500 mx-2 text-md font-semibold">Logout</span>
                         <i class="fas fa-right-from-bracket text-md text-red-500"></i>
@@ -398,6 +398,25 @@
                 'Akan Datang': 'bg-sky-100 text-sky-700',
             };
             return `<span class="badge ${styles[status] || 'bg-gray-100 text-gray-700'}">${status}</span>`;
+        }
+
+        function confirmLogout(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Yakin mau logout?",
+                text: "Kamu akan kembali ke login.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#16a34a",
+                cancelButtonColor: "#ef4444",
+                confirmButtonText: "Ya, Logout",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('logout') }}";
+                }
+            });
         }
     </script>
     @stack('scripts')

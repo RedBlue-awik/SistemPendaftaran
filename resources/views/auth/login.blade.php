@@ -39,7 +39,6 @@
 
     <div class="relative w-full max-w-5xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden flex min-h-[600px] md:min-h-[700px]">
         
-        <!-- Left Side: Info / Branding -->
         <div class="hidden md:flex md:w-1/2 bg-hijau-gelap text-white p-10 flex-col justify-between relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-hijau-utama rounded-full filter blur-3xl opacity-30 transform translate-x-20 -translate-y-20"></div>
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-hijau-pudar rounded-full filter blur-3xl opacity-20 transform -translate-x-20 translate-y-20"></div>
@@ -59,10 +58,8 @@
             </div>
         </div>
 
-        <!-- Right Side: Login Form -->
         <div class="w-full md:w-1/2 p-8 md:p-12 relative flex flex-col justify-center">
             
-            <!-- Mobile Logo Header -->
             <div class="md:hidden text-center mb-8">
                 <img src="{{ asset('logo.png') }}" alt="Logo SPMB" class="mx-auto w-16 h-16 mb-4">
                 <h2 class="text-xl font-bold text-hijau-gelap mt-2">SPMB SMK MAMBA'UL IHSAN</h2>
@@ -72,7 +69,6 @@
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">Masuk Akun</h3>
                 <p class="text-gray-500 text-sm mb-6">Silakan masuk untuk melanjutkan pendaftaran.</p>
                 
-                <!-- TAMBAHKAN ID PADA FORM -->
                 <form id="loginForm" action="{{ route('login') }}" method="POST">
                     @csrf
                     
@@ -127,7 +123,6 @@
     </div>
 
     <script>
-        // Script Toggle Password
         document.addEventListener('DOMContentLoaded', function() {
             const pwd = document.getElementById('password');
             const toggle = document.getElementById('togglePassword');
@@ -142,7 +137,6 @@
         });
     </script>
     <script>
-        // Show toast for server-side flash messages or validation errors (non-AJAX flows)
         const ToastS = Swal.mixin({
             toast: true,
             position: "top-end",

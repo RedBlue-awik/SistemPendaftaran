@@ -45,10 +45,8 @@
     <div
         class="relative w-full max-w-5xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden flex min-h-[600px] md:min-h-[700px]">
 
-        <!-- Left Side: Info / Branding (Hidden on small screens) -->
         <div
             class="hidden md:flex md:w-1/2 bg-hijau-gelap text-white p-10 flex-col justify-between relative overflow-hidden">
-            <!-- Decorative Background -->
             <div
                 class="absolute top-0 right-0 w-64 h-64 bg-hijau-utama rounded-full filter blur-3xl opacity-30 transform translate-x-20 -translate-y-20">
             </div>
@@ -82,7 +80,6 @@
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">Buat Akun Baru</h3>
                 <p class="text-gray-500 text-sm mb-6">Daftarkan diri Anda untuk memulai pendaftaran.</p>
 
-                <!-- Taruh ini tepat di atas tag <form> -->
                 @if ($errors->any())
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
                         role="alert">
@@ -164,7 +161,6 @@
                 </div>
             </div>
 
-            <!-- Back to Home Link -->
             <div class="mt-8 text-center">
                 <a href="{{ url('/') }}"
                     class="text-sm text-gray-500 hover:text-hijau-utama transition flex items-center justify-center gap-1">

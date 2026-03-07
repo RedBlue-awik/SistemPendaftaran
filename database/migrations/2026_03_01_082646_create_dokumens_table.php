@@ -24,8 +24,8 @@ return new class extends Migration
             $table->string('foto');
 
             // opsional sesuai jalur
-            $table->string('sertifikat')->nullable();
-            $table->string('ktp_orangtua')->nullable();
+            $table->string('ktp_orangtua');
+            $table->string('kip')->default('Tidak Ada');
 
             $table->timestamps();
         });

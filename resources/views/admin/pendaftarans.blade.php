@@ -5,25 +5,22 @@
 
 @section('content')
     <div class="overflow-x-auto mt-5">
-        <!-- DataTables CSS -->
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
-        <table id="pendaftaransTable" class="w-full bg-white display min-w-full">
-            <thead class="bg-green-50">
+        <table id="pendaftaransTable" class="w-full bg-white display">
+            <thead class="bg-green-500">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase">No. Pendaftaran</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase">Nama</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase">Aksi</th>
+                    <th class="px-2 py-4 text-center text-xs font-semibold text-muted uppercase">No.P</th>
+                    <th class="px-3 py-4 text-center text-xs font-semibold text-muted uppercase">Nama</th>
+                    <th class="px-3 py-4 text-center text-xs font-semibold text-muted uppercase">Status</th>
+                    <th class="px-3 py-4 text-center text-xs font-semibold text-muted uppercase">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-border">
                 @foreach ($pendaftarans as $p)
-                    <tr class="table-row">
-                        <td class="px-6 py-4 text-sm text-text-main font-mono">{{ $p->nomor_pendaftaran }}</td>
-                        <td class="px-6 py-4 text-sm text-text-main">{{ $p->nama_lengkap ?? $p->user->name }}</td>
-                        <td class="px-6 py-4">
+                    <tr class="table-row text-center">
+                        <td class="px-2 py-4 text-sm text-text-main font-mono">{{ $p->nomor_pendaftaran }}</td>
+                        <td class="px-3 py-4 text-sm text-text-main">{{ $p->nama_lengkap ?? $p->user->name }}</td>
+                        <td class="px-3 py-4">
                             @if ($p->status_pendaftaran === 'terverifikasi')
                                 <span class="badge bg-green-100 text-green-700">Terverifikasi</span>
                             @elseif($p->status_pendaftaran === 'menunggu_verifikasi')
@@ -31,7 +28,7 @@
                                     class="badge bg-gray-100 text-muted">Draft</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4"><a href="{{ route('admin.pendaftars.show', $p) }}"
+                        <td class="px-3 py-4"><a href="{{ route('admin.pendaftars.show', $p) }}"
                                 class="btn-primary px-3 py-1 rounded-lg text-xs text-white">Detail</a></td>
                     </tr>
                 @endforeach
@@ -108,10 +105,7 @@
                     timer: 3000
                 });
             @endif
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+
             if (typeof $ !== 'undefined' && $.fn.DataTable) {
                 const table = $('#pendaftaransTable').DataTable({
                     responsive: true,
@@ -121,20 +115,20 @@
                         [10, 25, 50, -1],
                         [10, 25, 50, 'Semua']
                     ],
-                    dom: '<"dt-top flex items-center justify-between"l f>rt<"dt-bottom flex items-center justify-between"i p>',
+                    dom: '<"dt-top flex items-center text-green-950 text-nowarp justify-between mb-3"l f>rt<"dt-bottom text-green-950 flex items-center text-nowarp justify-between mt-2"i p>',
                     columnDefs: [{
                         orderable: false,
                         targets: -1
                     }],
                     language: {
                         search: "",
-                        searchPlaceholder: "Cari nama, email...",
-                        lengthMenu: "Tampilkan _MENU_ entri",
+                        searchPlaceholder: "Cari pendaftar...",
+                        lengthMenu: "Tampilkan _MENU_ Data",
                         paginate: {
-                            previous: "Sebelumnya",
-                            next: "Berikutnya"
+                            previous: "<",
+                            next: ">"
                         },
-                        info: "Menampilkan _START_–_END_ dari _TOTAL_ entri",
+                        info: "Menampilkan _START_–_END_ dari _TOTAL_ Data",
                         zeroRecords: "Tidak ada data",
                     }
                 });

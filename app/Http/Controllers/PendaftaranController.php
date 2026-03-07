@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class PendaftaranController extends Controller
 {
-    public function create()
+    public function index()
     {
         $user = Auth::user();
         $gelombangs = Gelombang::where('status', 'aktif')->get();
@@ -24,6 +24,15 @@ class PendaftaranController extends Controller
 
     public function store(Request $request)
     {
+        $messages = [
+            'required' => ':attribute wajib diisi.',
+            'exists' => ':attribute yang dipilih tidak valid.',
+            'unique' => ':attribute sudah terdaftar.',
+            'mimes' => 'Format file :attribute harus :values.',
+            'max' => 'Ukuran file :attribute maksimal :max KB.',
+            'date' => 'Format tanggal tidak valid.',
+        ];
+
         $validatedData = $request->validate([
             'gelombang_id' => 'required|exists:gelombangs,id',
             'jalur_id' => 'required|exists:jalurs,id',
@@ -38,21 +47,25 @@ class PendaftaranController extends Controller
             'akta' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
             'ijazah' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
             'foto' => 'required|file|mimes:png,jpg,jpeg|max:2048',
-            'sertifikat' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
-            'ktp_orangtua' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
-        ]);
+            'ktp_orangtua' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
+            'kip' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
+        ], $messages);
 
         DB::beginTransaction();
         try {
             $dataPendaftaran = $validatedData;
-            $fileKeys = ['kk', 'akta', 'ijazah', 'foto', 'sertifikat', 'ktp_orangtua'];
+            $fileKeys = ['kk', 'akta', 'ijazah', 'foto', 'ktp_orangtua', 'kip'];
             
             foreach ($fileKeys as $key) {
                 unset($dataPendaftaran[$key]);
             }
 
+            $lastPendaftaran = Pendaftaran::lockForUpdate()->orderBy('id', 'desc')->first();
+            $lastNumber = $lastPendaftaran ? (int)substr($lastPendaftaran->nomor_pendaftaran, 2) : 0;
+            $nextNumber = $lastNumber + 1;
+            
             $dataPendaftaran['user_id'] = Auth::id();
-            $dataPendaftaran['nomor_pendaftaran'] = 'P' . time() . uniqid();
+            $dataPendaftaran['nomor_pendaftaran'] = 'P-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             $dataPendaftaran['status_pendaftaran'] = 'menunggu_verifikasi';
 
             $pendaftaran = Pendaftaran::create($dataPendaftaran);
@@ -82,11 +95,11 @@ class PendaftaranController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Pendaftaran berhasil disimpan.',
-                    'redirect' => route('pendaftaran')
+                    'redirect' => route('pendaftaran.index')
                 ]);
             }
 
-            return redirect()->route('pendaftaran')->with('success', 'Pendaftaran dan dokumen berhasil disimpan. Menunggu verifikasi admin.');
+            return redirect()->route('pendaftaran.index')->with('success', 'Pendaftaran berhasil disimpan. Menunggu verifikasi admin.');
 
         } catch (\Exception $e) {
             DB::rollBack();

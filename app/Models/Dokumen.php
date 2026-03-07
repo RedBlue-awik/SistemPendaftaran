@@ -12,7 +12,7 @@ class Dokumen extends Model
         'akta',
         'ijazah',
         'foto',
-        'sertifikat',
+        'kip',
         'ktp_orangtua',
     ];
 

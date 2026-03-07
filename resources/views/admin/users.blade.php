@@ -13,7 +13,6 @@
         </button>
     </div>
     <div class="overflow-x-auto mt-5">
-        <!-- Table tetap sama -->
         <table id="usersTable" class="w-full bg-white display">
             <thead class="bg-green-500">
                 <tr>
@@ -43,7 +42,8 @@
                                 @csrf<button class="p-2 rounded-lg" title="Reject"><i
                                         class="fas fa-ban text-[19px]"></i></button></form>
                             <form method="POST" action="{{ route('admin.users.destroy', $u) }}" style="display:inline">
-                                @csrf @method('DELETE')<button class="py-2 ps-2 rounded-lg" title="Hapus"><i
+                                @csrf @method('DELETE')<button onclick="confirmDelete(event, this)"
+                                    class="py-2 ps-2 rounded-lg" title="Hapus"><i
                                         class="fas fa-trash text-[19px]"></i></button></form>
                         </td>
                     </tr>
@@ -100,12 +100,16 @@
                             <label class="block text-sm font-medium text-text-main mb-2">Password</label>
                             <input id="u_password" name="password" type="password"
                                 class="w-full px-4 py-2.5 bg-green-50 border border-border rounded-xl focus:outline-none focus:border-accent">
-                            <small class="text-xs text-muted">Biarkan kosong saat edit jika tidak ingin mengubah password.</small>
+                            <small class="text-xs text-muted">Biarkan kosong saat edit jika tidak ingin mengubah
+                                password.</small>
                         </div>
                     </div>
                     <div class="modal-footer bg-white border-t border-gray-200">
-                        <button type="button" class="px-4 py-2.5 bg-green-50 border border-border rounded-xl text-text-main hover:bg-green-100 transition-colors font-medium" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="px-4 py-2.5 bg-green-700 rounded-xl text-white font-medium hover:bg-green-800 transition-colors">Simpan</button>
+                        <button type="button"
+                            class="px-4 py-2.5 bg-green-50 border border-border rounded-xl text-text-main hover:bg-green-100 transition-colors font-medium"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2.5 bg-green-700 rounded-xl text-white font-medium hover:bg-green-800 transition-colors">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -114,17 +118,15 @@
 @endsection
 
 @push('scripts')
-    <!-- Pastikan Bootstrap 5 JS sudah termuat di layouts.app atau di sini -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        // Inisialisasi Modal Bootstrap
         const userModalEl = document.getElementById('userModal');
         const userModal = new bootstrap.Modal(userModalEl);
         const form = document.getElementById('userForm');
         const modalTitle = document.getElementById('userModalLabel');
 
-        // Fungsi untuk Reset Form (Tambahan Baru)
+        // Fungsi untuk Reset Form
         function resetForm() {
             modalTitle.textContent = 'Tambah User Baru';
             form.action = '{{ route('admin.users.store') }}';
@@ -138,7 +140,6 @@
             document.getElementById('u_password').required = true;
         }
 
-        // Event Listener Tombol Tambah (ID)
         document.getElementById('btnAddUser').addEventListener('click', function() {
             resetForm();
             userModal.show();
@@ -149,19 +150,38 @@
             modalTitle.textContent = 'Edit User';
             form.action = '/admin/users/' + user.id;
             document.getElementById('userFormMethod').value = 'PUT';
-            
+
             document.getElementById('u_name').value = user.name || '';
             document.getElementById('u_email').value = user.email || '';
             document.getElementById('u_phone').value = user.phone || '';
             document.getElementById('u_role').value = user.role || 'siswa';
             document.getElementById('u_status').value = user.status_akun || 'menunggu';
-            document.getElementById('u_password').value = ''; 
+            document.getElementById('u_password').value = '';
             document.getElementById('u_password').required = false;
-            
+
             userModal.show();
         }
+
+        function confirmDelete(e, el) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Hapus data?",
+                text: "Data user yang dihapus tidak bisa dikembalikan!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#ef4444",
+                cancelButtonColor: "#6b7280",
+                confirmButtonText: "Ya, Hapus",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    el.closest("form").submit();
+                }
+            });
+        }
     </script>
-    
+
     <script>
         const Toast = Swal.mixin({
             toast: true,
