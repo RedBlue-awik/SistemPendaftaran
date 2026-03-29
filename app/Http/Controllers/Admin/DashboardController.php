@@ -51,7 +51,7 @@ class DashboardController extends Controller
 
         $chartData = $months->map(fn($ym) => isset($counts[$ym]) ? (int) $counts[$ym] : 0)->toArray();
 
-        $recent = Pendaftaran::latest()->take(5)->get(['nomor_pendaftaran', 'nama_lengkap', 'status_pendaftaran']);
+        $recent = Pendaftaran::latest()->take(5)->get(['nomor_pendaftaran', 'nama_lengkap', 'status_kelulusan']);
 
         return view('admin.dashboard', compact(
             'totalPendaftar', 'totalGelombangAktif', 'totalJalur', 'totalUsers',

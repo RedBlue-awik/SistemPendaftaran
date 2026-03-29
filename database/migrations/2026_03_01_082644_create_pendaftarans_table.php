@@ -35,18 +35,11 @@ return new class extends Migration
             $table->string('sekolah_asal');
             $table->string('jurusan_pilihan');
 
-            // STATUS PMB
-            $table->enum('status_pendaftaran', [
-                'draft',
-                'menunggu_verifikasi',
-                'terverifikasi'
-            ])->default('draft');
-
             $table->enum('status_kelulusan', [
-                'proses',
+                'menunggu',
                 'lulus',
                 'tidak_lulus'
-            ])->default('proses');
+            ])->default('menunggu');
 
             // DAFTAR ULANG OFFLINE
             $table->enum('status_daftar_ulang', [
@@ -61,8 +54,6 @@ return new class extends Migration
                 'resmi',
                 'gugur'
             ])->default('calon');
-
-            $table->timestamp('batas_daftar_ulang')->nullable();
 
             $table->timestamps();
         });

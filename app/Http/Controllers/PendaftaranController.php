@@ -6,7 +6,6 @@ use App\Models\Dokumen;
 use App\Models\Gelombang;
 use App\Models\Jalur;
 use App\Models\Pendaftaran;
-use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +16,9 @@ class PendaftaranController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $gelombangs = Gelombang::where('status', 'aktif')->get();
-        $jalurs = Jalur::all();
-        return view('pendaftaran', compact('user', 'gelombangs', 'jalurs'));
+        $activeGelombang = Gelombang::where('status', 'aktif')->first();
+        $jalurs = Jalur::withCount('pendaftarans')->get();
+        return view('pendaftaran', compact('user', 'activeGelombang', 'jalurs'));
     }
 
     public function store(Request $request)
@@ -51,6 +50,22 @@ class PendaftaranController extends Controller
             'kip' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
         ], $messages);
 
+        // Pastikan gelombang yang dipakai adalah gelombang aktif (user tidak memilihnya)
+        $activeGelombang = Gelombang::where('status', 'aktif')->first();
+        if (!$activeGelombang) {
+            return back()->withInput()->with('error', 'Belum ada gelombang aktif saat ini. Silakan hubungi admin.');
+        }
+        $validatedData['gelombang_id'] = $activeGelombang->id;
+
+        // Cek kuota jalur: jika sudah mencapai batas, batalkan pendaftaran
+        $jalur = Jalur::withCount('pendaftarans')->find($validatedData['jalur_id']);
+        if (!$jalur) {
+            return back()->withInput()->withErrors(['jalur_id' => 'Jalur yang dipilih tidak ditemukan.']);
+        }
+        if (!is_null($jalur->batas_pendaftaran) && $jalur->pendaftarans_count >= $jalur->batas_pendaftaran) {
+            return back()->withInput()->withErrors(['jalur_id' => 'Jalur yang dipilih sudah penuh. Silakan pilih jalur lain.']);
+        }
+
         DB::beginTransaction();
         try {
             $dataPendaftaran = $validatedData;
@@ -60,12 +75,38 @@ class PendaftaranController extends Controller
                 unset($dataPendaftaran[$key]);
             }
 
-            $lastPendaftaran = Pendaftaran::lockForUpdate()->orderBy('id', 'desc')->first();
-            $lastNumber = $lastPendaftaran ? (int)substr($lastPendaftaran->nomor_pendaftaran, 2) : 0;
-            $nextNumber = $lastNumber + 1;
-            
+            // Lock gelombang and jalur rows and decrement their batas_pendaftaran atomically
+            $gelombang = Gelombang::lockForUpdate()->find($dataPendaftaran['gelombang_id']);
+            if ($gelombang && !is_null($gelombang->batas_pendaftaran)) {
+                if ($gelombang->batas_pendaftaran <= 0) {
+                    DB::rollBack();
+                    return back()->withInput()->withErrors(['gelombang_id' => 'Kuota gelombang tidak mencukupi.']);
+                }
+                $gelombang->batas_pendaftaran = max(0, $gelombang->batas_pendaftaran - 1);
+                $gelombang->save();
+            }
+
+            $jalurLocked = Jalur::lockForUpdate()->find($dataPendaftaran['jalur_id']);
+            if ($jalurLocked && !is_null($jalurLocked->batas_pendaftaran)) {
+                if ($jalurLocked->batas_pendaftaran <= 0) {
+                    DB::rollBack();
+                    return back()->withInput()->withErrors(['jalur_id' => 'Kuota jalur tidak mencukupi. Silakan pilih jalur lain.']);
+                }
+                $jalurLocked->batas_pendaftaran = max(0, $jalurLocked->batas_pendaftaran - 1);
+                $jalurLocked->save();
+            }
+
+            // Generate nomor pendaftaran per-gelombang (reset tiap gelombang)
+            $seqRow = DB::table('pendaftarans')
+                ->where('gelombang_id', $gelombang->id)
+                ->lockForUpdate()
+                ->selectRaw('COUNT(*) as cnt')
+                ->first();
+
+            $nextNumber = ($seqRow->cnt ?? 0) + 1;
+
             $dataPendaftaran['user_id'] = Auth::id();
-            $dataPendaftaran['nomor_pendaftaran'] = 'P-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $dataPendaftaran['nomor_pendaftaran'] = 'P' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT) . '-G' . $gelombang->id;
             $dataPendaftaran['status_pendaftaran'] = 'menunggu_verifikasi';
 
             $pendaftaran = Pendaftaran::create($dataPendaftaran);
@@ -81,14 +122,7 @@ class PendaftaranController extends Controller
 
             Dokumen::create($dataDokumen);
 
-            try {
-                $to = $pendaftaran->no_hp ?? Auth::user()->phone;
-                if ($to) {
-                    WhatsAppService::send($to, 'Pendaftaran dan dokumen Anda berhasil disimpan dengan No. Pendaftaran: ' . $pendaftaran->nomor_pendaftaran . '. Menunggu verifikasi admin.');
-                }
-            } catch (\Exception $e) {
-                Log::error('WhatsApp Error: ' . $e->getMessage());
-            }
+            // WhatsApp notification removed per request
 
             DB::commit();
 

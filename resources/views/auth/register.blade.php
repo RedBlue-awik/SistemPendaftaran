@@ -232,6 +232,17 @@
                 @endforeach
                 ToastE.fire({ icon: 'error', title: msgs });
             @endif
+
+            @if(session('login_success'))
+                const loginPayload = @json(session('login_success'));
+                if (loginPayload) {
+                    ToastS.fire({ icon: loginPayload.icon || 'success', title: loginPayload.message || 'Login berhasil' });
+                    const delayMs = Number(loginPayload.delay) || 1500;
+                    setTimeout(() => {
+                        window.location.href = loginPayload.redirect || '/';
+                    }, delayMs);
+                }
+            @endif
         });
     </script>
 </body>

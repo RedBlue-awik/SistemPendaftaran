@@ -4,19 +4,40 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Pendaftaran;
+use App\Models\Pengaturan;
+use App\Models\Gelombang;
+use Carbon\Carbon;
 
 class AutoGugurPendaftar extends Command
 {
     protected $signature = 'pmb:auto-gugur';
-    protected $description = 'Set status_akhir to gugur for lulus but not daftar ulang after batas_daftar_ulang';
+    protected $description = 'Ubah status pendaftar menjadi gugur jika sudah melewati batas daftar ulang';
 
     public function handle()
     {
-        $now = now();
+        $pengaturan = Pengaturan::whereNotNull('tanggal_selesai')->first();
+
+        if (! $pengaturan || ! $pengaturan->tanggal_mulai || ! $pengaturan->tanggal_selesai) {
+            $this->info('Tanggal mulai/selesai daftar ulang belum diatur di Pengaturan. Tidak ada aksi.');
+            return 0;
+        }
+
+        $now = Carbon::now();
+        $tanggalSelesai = Carbon::parse($pengaturan->tanggal_selesai);
+
+        if ($now->lessThanOrEqualTo($tanggalSelesai)) {
+            return 0;
+        }
+
+        $activeGelombang = Gelombang::where('status', 'aktif')->first();
+
+        if (! $activeGelombang) {
+            return 0;
+        }
+
         $list = Pendaftaran::where('status_kelulusan', 'lulus')
             ->where('status_daftar_ulang', 'belum')
-            ->whereNotNull('batas_daftar_ulang')
-            ->where('batas_daftar_ulang', '<', $now)
+            ->where('gelombang_id', $activeGelombang->id)
             ->get();
 
         foreach ($list as $p) {

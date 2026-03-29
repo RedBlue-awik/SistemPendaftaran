@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
             $table->integer('batas_pendaftaran');
-            $table->enum('status', ['aktif', 'tutup'])
+            $table->enum('status', ['aktif', 'segera', 'tutup'])
                 ->default('aktif');
             $table->timestamps();
         });

@@ -18,7 +18,6 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
-
     Route::get('/gelombangs', [GelombangController::class, 'index'])->name('gelombangs.index');
     Route::get('/jalurs', [JalurController::class, 'index'])->name('jalurs.index');
     Route::get('/pendaftaran', [\App\Http\Controllers\PendaftaranController::class, 'index'])->name('pendaftaran.index');
@@ -27,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
+        Route::post('pengaturan', [\App\Http\Controllers\Admin\PengaturanController::class, 'update'])->name('admin.pengaturan.update');
         Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');
         Route::post('users', [AdminUserController::class, 'store'])->name('admin.users.store');
         Route::put('users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
@@ -43,13 +43,15 @@ Route::middleware('auth')->group(function () {
         Route::post('jalurs', [JalurController::class, 'store'])->name('admin.jalurs.store');
         Route::put('jalurs/{jalur}', [JalurController::class, 'update'])->name('admin.jalurs.update');
         Route::delete('jalurs/{jalur}', [JalurController::class, 'destroy'])->name('admin.jalurs.destroy');
-        
-        // admin pendaftaran
-        Route::get('pendaftarans', [\App\Http\Controllers\Admin\PendaftaranController::class, 'index'])->name('admin.pendaftars.index');
-        Route::get('pendaftarans/{pendaftaran}', [\App\Http\Controllers\Admin\PendaftaranController::class, 'show'])->name('admin.pendaftars.show');
-        Route::post('pendaftarans/{pendaftaran}/verify', [\App\Http\Controllers\Admin\PendaftaranController::class, 'verify'])->name('admin.pendaftars.verify');
-        Route::post('pendaftarans/{pendaftaran}/select', [\App\Http\Controllers\Admin\PendaftaranController::class, 'setSelection'])->name('admin.pendaftars.select');
-        
-        Route::post('pendaftarans/{pendaftaran}/confirm-daftar-ulang', [\App\Http\Controllers\Admin\DaftarUlangController::class, 'confirm'])->name('admin.pendaftars.confirm_daftar_ulang');
+
+        Route::get('pendaftars', [\App\Http\Controllers\Admin\PendaftarController::class, 'index'])->name('admin.pendaftars.index');
+        Route::get('pendaftars/{pendaftaran}', [\App\Http\Controllers\Admin\PendaftarController::class, 'show'])->name('admin.pendaftars.show');
+        Route::post('pendaftars/{pendaftaran}/verify', [\App\Http\Controllers\Admin\PendaftarController::class, 'verify'])->name('admin.pendaftars.verify');
+        Route::post('pendaftars/{pendaftaran}/select', [\App\Http\Controllers\Admin\PendaftarController::class, 'setSelection'])->name('admin.pendaftars.select');
+        Route::post('pendaftars/{pendaftaran}/confirm-daftar-ulang', [\App\Http\Controllers\Admin\PendaftarController::class, 'confirmDaftarUlang'])->name('admin.pendaftars.confirm_daftar_ulang');
     });
+});
+
+Route::get('/test-wa', function () {
+    \App\Services\WhatsAppService::send('6289503218690', 'Test dari Laravel');
 });

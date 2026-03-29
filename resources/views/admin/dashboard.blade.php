@@ -86,7 +86,7 @@
     <!-- Charts dan Tables Row -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div class="lg:col-span-2 bg-white border border-border rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-text-main mb-6">Statistik Pendaftaran (7 bulan terakhir)</h3>
+            <h3 class="text-lg font-bold text-text-main mb-6">Statistik Pendaftar (7 bulan terakhir)</h3>
             <div class="flex items-end gap-4 h-48">
                 @php
                     $max = max($chartData) ?: 1;
@@ -160,13 +160,13 @@
                                 {{ $p->nomor_pendaftaran ?? '#' . $p->id }}</td>
                             <td class="px-6 py-4 text-sm text-text-main">{{ $p->nama_lengkap ?? '—' }}</td>
                             <td class="px-6 py-4">
-                                @if ($p->status_pendaftaran === 'Diterima')
-                                    <span class="badge bg-green-100 text-green-700">Diterima</span>
-                                @elseif($p->status_pendaftaran === 'Ditolak')
-                                    <span class="badge bg-red-100 text-red-700">Ditolak</span>
-                                @else
+                                @if ($p->status_kelulusan === 'lulus')
+                                    <span class="badge bg-green-100 text-green-700">Lulus</span>
+                                @elseif($p->status_kelulusan === 'tidak_lulus')
+                                    <span class="badge bg-red-100 text-red-700">Tidak lulus</span>
+                                @elseif($p->status_kelulusan === 'menunggu')
                                     <span
-                                        class="badge bg-amber-100 text-amber-700">{{ $p->status_pendaftaran ?? 'Proses' }}</span>
+                                        class="badge bg-gray-100 text-gray-700">Menunggu</span>
                                 @endif
                             </td>
                         </tr>

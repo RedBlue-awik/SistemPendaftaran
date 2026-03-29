@@ -52,7 +52,7 @@
         </table>
     </div>
 
-    <!-- Modal Bootstrap 5 -->
+    <!-- Modal -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

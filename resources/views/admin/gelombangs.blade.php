@@ -7,8 +7,8 @@
 
 <div class="flex items-center justify-between mb-6">
     <h3 class="text-xl font-bold text-text-main">Daftar Gelombang Pendaftaran</h3>
-    <button type="button" class="btn-primary px-4 py-2.5 rounded-xl text-sm font-medium text-white flex items-center gap-2" data-bs-toggle="modal" data-bs-target="#gelombangModal" onclick="resetForm()">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    <button type="button" class="bg-green-700 px-4 py-[12px] rounded-[5px] text-sm font-medium text-white flex items-center gap-2" data-bs-toggle="modal" data-bs-target="#gelombangModal" onclick="resetForm()">
+            <i class="fas fa-plus text-[15px] me-0.5"></i>
         Tambah Gelombang
     </button>
 </div>
@@ -27,6 +27,8 @@
             </div>
             @if($g->status === 'aktif')
                 <span class="badge bg-green-100 text-green-700 border border-green-200">Aktif</span>
+            @elseif($g->status === 'segera')
+                <span class="badge bg-yellow-100 text-yellow-700 border border-yellow-200">Segera Dibuka</span>
             @else
                 <span class="badge bg-gray-100 text-gray-600 border border-gray-200">Tutup</span>
             @endif
@@ -85,17 +87,10 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div class="grid gap-4 mb-3">
                         <div>
                             <label class="block text-sm font-medium text-text-main mb-2">Batas Pendaftar</label>
                             <input type="number" id="g_batas" name="batas_pendaftaran" required class="w-full px-4 py-2.5 bg-green-50 border border-border rounded-xl focus:outline-none focus:border-accent transition text-text-main" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-text-main mb-2">Status</label>
-                            <select id="g_status" name="status" class="w-full px-4 py-2.5 bg-green-50 border border-border rounded-xl focus:outline-none focus:border-accent transition text-text-main">
-                                <option value="aktif">Aktif</option>
-                                <option value="tutup">Tutup</option>
-                            </select>
                         </div>
                     </div>
                 </form>
@@ -172,7 +167,6 @@
         if(fpSelesai) fpSelesai.setDate(gelombang.tanggal_selesai);
         
         document.getElementById('g_batas').value = gelombang.batas_pendaftaran;
-        document.getElementById('g_status').value = gelombang.status;
 
         // Tampilkan Modal
         gelombangModal.show();

@@ -18,12 +18,10 @@ class Pendaftaran extends Model
         'no_hp',
         'sekolah_asal',
         'jurusan_pilihan',
-        'status_pendaftaran',
         'status_kelulusan',
         'status_daftar_ulang',
         'tanggal_daftar_ulang',
         'status_akhir',
-        'batas_daftar_ulang',
     ];
 
     public function user()
